@@ -165,11 +165,20 @@ class Visitor(traverse.Visitor):
 
 	def visit_table_record(self, node):
 		if self._is_valid_name(node.key):
-			self._write(node.key.value)
+			if node.key.value.isnumeric():
+				self._write("[")
 
-			self._skip(node.key)
+				self._write(node.key.value)
+				
+				self._skip(node.key)
 
-			self._write(" = ")
+				self._write("] = ")
+			else:
+				self._write(node.key.value)
+
+				self._skip(node.key)
+
+				self._write(" = ")
 		else:
 			self._write("[")
 

@@ -83,7 +83,7 @@ class _IDef():
 
 # class = name			A	B	C	description
 # Comparison ops
-
+# _IDef(name, A_type, B_type, CD_type, description)
 ISLT = _IDef("ISLT", 		T_VAR, 	None, 	T_VAR, 	"if {A} < {D}")
 ISGE = _IDef("ISGE", 		T_VAR, 	None, 	T_VAR, 	"if {A} >= {D}")
 ISLE = _IDef("ISLE", 		T_VAR, 	None, 	T_VAR, 	"if {A} <= {D}")
