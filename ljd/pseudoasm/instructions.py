@@ -4,8 +4,8 @@
 
 import ljd.bytecode.instructions as ins
 from ljd.bytecode.constants import T_NIL, T_FALSE, T_TRUE
-
 import ljd.pseudoasm.prototype
+import gconfig
 
 _FORMAT = "{addr:3}\t[{line:3}]\t{name:<5}\t{a:3}\t{b}\t{c}\t; {description}"
 
@@ -188,6 +188,10 @@ def _lookup_variable_name_step(writer, addr, slot):
 			table = _lookup_variable_name_step(writer, addr, table_slot)
 
 			if table is None:
+				if gconfig.gVerbose:
+					print("unknown table error")
+					print(instruction)
+					print(constants)
 				table = "<unknown table>"
 
 			binary = constants[instruction.CD]

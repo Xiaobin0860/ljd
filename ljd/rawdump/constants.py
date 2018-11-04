@@ -36,17 +36,23 @@ def read(parser, constants):
 
 
 def _read_upvalue_references(parser, references):
+	if gconfig.gVerbose:
+		print("references:")
 	i = 0
 
 	while i < parser.upvalues_count:
-		i += 1
 		upvalue = parser.stream.read_uint(2)
 		references.append(upvalue)
+		if gconfig.gVerbose:
+			print("{0}: {1}".format(i, upvalue))
+		i += 1
 
 	return True
 
 
 def _read_complex_constants(parser, complex_constants):
+	if gconfig.gVerbose:
+		print("complex_constants:")
 	i = 0
 
 	while i < parser.complex_constants_count:
@@ -78,12 +84,16 @@ def _read_complex_constants(parser, complex_constants):
 		else:
 			complex_constants.append(parser.prototypes.pop())
 
+		if gconfig.gVerbose:
+			print("{0}: {1}".format(i, complex_constants[-1]))
 		i += 1
 
 	return True
 
 
 def _read_numeric_constants(parser, numeric_constants):
+	if gconfig.gVerbose:
+		print("numeric_constants:")
 	i = 0
 
 	while i < parser.numeric_constants_count:
@@ -98,6 +108,8 @@ def _read_numeric_constants(parser, numeric_constants):
 
 		numeric_constants.append(number)
 
+		if gconfig.gVerbose:
+			print("{0}: {1}".format(i, numeric_constants[-1]))
 		i += 1
 
 	return True
