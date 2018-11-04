@@ -19,6 +19,7 @@
 # 	bla-bla
 # 	bar(...)
 #
+import gconfig
 
 # Argument types
 
@@ -44,39 +45,51 @@ T_JMP = 13  # branch target, relative to next instruction, biased with 0x8000
 
 
 class _Instruction():
-	def __init__(self, definition):
-		for key, value in definition.__dict__.items():
-			setattr(self, key, value)
+    def __init__(self, definition):
+        for key, value in definition.__dict__.items():
+            setattr(self, key, value)
 
-		if self.A_type is not None:
-			self.A = 0
+        if self.A_type is not None:
+            self.A = 0
 
-		if self.B_type is not None:
-			self.B = 0
+        if self.B_type is not None:
+            self.B = 0
 
-		if self.CD_type is not None:
-			self.CD = 0
+        if self.CD_type is not None:
+            self.CD = 0
+
+    def __repr__(self):
+        str = "Instruction name={0}, code=0x{1:x}".format(self.name, self.opcode)
+        if self.description is not None:
+            str += "\ndescription={0}".format(self.description)
+        if self.A_type is not None:
+            str += "\na=0x{0:x}".format(self.A)
+        if self.B_type is not None:
+            str += "\nb=0x{0:x}".format(self.B)
+        if self.CD_type is not None:
+            str += "\ncd=0x{0:x}".format(self.CD)
+        return str
 
 
 class _IDef():
-	_LAST_OPCODE = 0
+    _LAST_OPCODE = 0
 
-	def __init__(self, name, A_type, B_type, CD_type, description):
-		self.name = name
-		self.opcode = _IDef._LAST_OPCODE
-		self.A_type = A_type
-		self.B_type = B_type
-		self.CD_type = CD_type
-		self.description = description
+    def __init__(self, name, A_type, B_type, CD_type, description):
+        self.name = name
+        self.opcode = _IDef._LAST_OPCODE
+        self.A_type = A_type
+        self.B_type = B_type
+        self.CD_type = CD_type
+        self.description = description
 
-		self.args_count = (self.A_type is not None)	\
-				+ (self.B_type is not None)	\
-				+ (self.CD_type is not None)
+        self.args_count = (self.A_type is not None)	\
+            + (self.B_type is not None)	\
+            + (self.CD_type is not None)
 
-		_IDef._LAST_OPCODE += 1
+        _IDef._LAST_OPCODE += 1
 
-	def __call__(self):
-		return _Instruction(self)
+    def __call__(self):
+        return _Instruction(self)
 
 
 # Names and order are in sync with luaJIT bytecode for ease of changing
@@ -140,7 +153,7 @@ MODVV = _IDef("MODVV", 		T_DST, 	T_VAR, 	T_VAR, 	"{A} = {B} % {C}")
 
 POW = _IDef("POW", 		T_DST, 	T_VAR, 	T_VAR, 	"{A} = {B} ^ {C} (pow)")
 CAT = _IDef("CAT", 		T_DST, 	T_RBS, 	T_RBS,
-		"{A} = {concat_from_B_to_C}")
+            "{A} = {concat_from_B_to_C}")
 
 # Constant ops.
 
@@ -162,15 +175,15 @@ USETN = _IDef("USETN", 		T_UV, 	None, 	T_NUM, 	"{A} = {D}")
 USETP = _IDef("USETP", 		T_UV, 	None, 	T_PRI, 	"{A} = {D}")
 
 UCLO = _IDef("UCLO", 		T_RBS, 	None, 	T_JMP,
-		"nil uvs >= {A}; goto {D}")
+             "nil uvs >= {A}; goto {D}")
 
 FNEW = _IDef("FNEW", 		T_DST, 	None, 	T_FUN, 	"{A} = function {D}")
 
 # Table ops.
 
 TNEW = _IDef("TNEW", 		T_DST, 	None, 	T_LIT, 	"{A} = new table("
-							" array: {D_array},"
-							" dict: {D_dict})")
+             " array: {D_array},"
+             " dict: {D_dict})")
 
 TDUP = _IDef("TDUP", 		T_DST, 	None, 	T_TAB, 	"{A} = copy {D}")
 
@@ -187,49 +200,49 @@ TSETS = _IDef("TSETS", 		T_VAR, 	T_VAR, 	T_STR, 	"{B}.{C} = {A}")
 TSETB = _IDef("TSETB", 		T_VAR, 	T_VAR, 	T_LIT, 	"{B}[{C}] = {A}")
 
 TSETM = _IDef("TSETM", 	 	T_BS, 	None, 	T_NUM,
-		"for i = 0, MULTRES, 1 do"
-		" {A_minus_one}[{D_low} + i] = slot({A} + i)")
+              "for i = 0, MULTRES, 1 do"
+              " {A_minus_one}[{D_low} + i] = slot({A} + i)")
 
 TSETR = _IDef("TSETR", 		T_VAR, 	T_VAR, 	T_VAR, 	"unkow TSETR")
 # Calls and vararg handling. T = tail call.
 
 CALLM = _IDef("CALLM", 		T_BS, 	T_LIT, 	T_LIT,
-		"{from_A_x_B_minus_two} = {A}({from_A_plus_one_x_C}, ...MULTRES)")
+              "{from_A_x_B_minus_two} = {A}({from_A_plus_one_x_C}, ...MULTRES)")
 
 CALL = _IDef("CALL", 		T_BS, 	T_LIT, 	T_LIT,
-		"{from_A_x_B_minus_two} = {A}({from_A_plus_one_x_C_minus_one})")
+             "{from_A_x_B_minus_two} = {A}({from_A_plus_one_x_C_minus_one})")
 
 CALLMT = _IDef("CALLMT", 	T_BS, 	None, 	T_LIT,
-		"return {A}({from_A_plus_one_x_D}, ...MULTRES)")
+               "return {A}({from_A_plus_one_x_D}, ...MULTRES)")
 
 CALLT = _IDef("CALLT", 		T_BS, 	None, 	T_LIT,
-		"return {A}({from_A_plus_one_x_D_minus_one})")
+              "return {A}({from_A_plus_one_x_D_minus_one})")
 
 ITERC = _IDef("ITERC", 		T_BS, 	T_LIT, 	T_LIT,
-		"{A}, {A_plus_one}, {A_plus_two} ="
-			" {A_minus_three}, {A_minus_two}, {A_minus_one};"
-		" {from_A_x_B_minus_two} ="
-			" {A_minus_three}({A_minus_two}, {A_minus_one})")
+              "{A}, {A_plus_one}, {A_plus_two} ="
+              " {A_minus_three}, {A_minus_two}, {A_minus_one};"
+              " {from_A_x_B_minus_two} ="
+              " {A_minus_three}({A_minus_two}, {A_minus_one})")
 
 ITERN = _IDef("ITERN", 		T_BS, 	T_LIT, 	T_LIT,
-		"{A}, {A_plus_one}, {A_plus_two} ="
-			" {A_minus_three}, {A_minus_two}, {A_minus_one};"
-		" {from_A_x_B_minus_two} ="
-			" {A_minus_three}({A_minus_two}, {A_minus_one})")
+              "{A}, {A_plus_one}, {A_plus_two} ="
+              " {A_minus_three}, {A_minus_two}, {A_minus_one};"
+              " {from_A_x_B_minus_two} ="
+              " {A_minus_three}({A_minus_two}, {A_minus_one})")
 
 VARG = _IDef("VARG", 		T_BS, 	T_LIT, 	T_LIT,
-		"{from_A_x_B_minus_two} = ...")
+             "{from_A_x_B_minus_two} = ...")
 
 ISNEXT = _IDef("ISNEXT", 	 T_BS, 	None, 	T_JMP,
-		"Verify ITERN at {D}; goto {D}")
+               "Verify ITERN at {D}; goto {D}")
 
 # Returns.
 
 RETM = _IDef("RETM", 		T_BS, 	None, 	T_LIT,
-		"return {from_A_x_D_minus_one}, ...MULTRES")
+             "return {from_A_x_D_minus_one}, ...MULTRES")
 
 RET = _IDef("RET", 	 	T_RBS, 	None, 	T_LIT,
-		"return {from_A_x_D_minus_two}")
+            "return {from_A_x_D_minus_two}")
 
 RET0 = _IDef("RET0", 		T_RBS, 	None, 	T_LIT, 	"return")
 RET1 = _IDef("RET1", 		T_RBS, 	None, 	T_LIT, 	"return {A}")
@@ -237,33 +250,33 @@ RET1 = _IDef("RET1", 		T_RBS, 	None, 	T_LIT, 	"return {A}")
 # Loops and branches. I/J = interp/JIT, I/C/L = init/call/loop.
 
 FORI = _IDef("FORI", 		T_BS, 	None, 	T_JMP,
-		"for {A_plus_three} = {A},{A_plus_one},{A_plus_two}"
-		" else goto {D}")
+             "for {A_plus_three} = {A},{A_plus_one},{A_plus_two}"
+             " else goto {D}")
 
 JFORI = _IDef("JFORI", 		T_BS, 	None, 	T_JMP,
-		"for {A_plus_three} = {A},{A_plus_one},{A_plus_two}"
-		" else goto {D}")
+              "for {A_plus_three} = {A},{A_plus_one},{A_plus_two}"
+              " else goto {D}")
 
 FORL = _IDef("FORL", 		T_BS, 	None, 	T_JMP,
-		"{A} = {A} + {A_plus_two};"
-		" if cmp({A}, sign {A_plus_two},  {A_plus_one}) goto {D}")
+             "{A} = {A} + {A_plus_two};"
+             " if cmp({A}, sign {A_plus_two},  {A_plus_one}) goto {D}")
 
 IFORL = _IDef("IFORL", 	 	T_BS, 	None, 	T_JMP,
-		"{A} = {A} + {A_plus_two};"
-		" if cmp({A}, sign {A_plus_two}, {A_plus_one}) goto {D}")
+              "{A} = {A} + {A_plus_two};"
+              " if cmp({A}, sign {A_plus_two}, {A_plus_one}) goto {D}")
 
 JFORL = _IDef("JFORL", 		T_BS, 	None, 	T_JMP,
-		"{A} = {A} + {A_plus_two};"
-		" if cmp({A}, sign {A_plus_two}, {A_plus_one}) goto {D}")
+              "{A} = {A} + {A_plus_two};"
+              " if cmp({A}, sign {A_plus_two}, {A_plus_one}) goto {D}")
 
 ITERL = _IDef("ITERL", 		T_BS, 	None, 	T_JMP,
-		"{A_minus_one} = {A}; if {A} != nil goto {D}")
+              "{A_minus_one} = {A}; if {A} != nil goto {D}")
 
 IITERL = _IDef("IITERL", 	T_BS, 	None, 	T_JMP,
-		"{A_minus_one} = {A}; if {A} != nil goto {D}")
+               "{A_minus_one} = {A}; if {A} != nil goto {D}")
 
 JITERL = _IDef("JITERL", 	T_BS, 	None, 	T_LIT,
-		"{A_minus_one} = {A}; if {A} != nil goto {D}")
+               "{A_minus_one} = {A}; if {A} != nil goto {D}")
 
 LOOP = _IDef("LOOP", 		T_RBS, 	None, 	T_JMP, 	"Noop")
 ILOOP = _IDef("ILOOP", 		T_RBS, 	None, 	T_JMP, 	"Noop")
@@ -275,26 +288,26 @@ JMP = _IDef("JMP", 		T_RBS, 	None, 	T_JMP, 	"	goto {D}")
 # Shouldn't be ever seen - they are not stored in raw dump?
 
 FUNCF = _IDef("FUNCF", 		T_RBS, 	None, 	None,
-		"Fixed-arg function with frame size {A}")
+              "Fixed-arg function with frame size {A}")
 
 IFUNCF = _IDef("IFUNCF", 	T_RBS, 	None, 	None,
-		"Interpreted fixed-arg function with frame size {A}")
+               "Interpreted fixed-arg function with frame size {A}")
 
 JFUNCF = _IDef("JFUNCF", 	T_RBS, 	None, 	T_LIT,
-		"JIT compiled fixed-arg function with frame size {A}")
+               "JIT compiled fixed-arg function with frame size {A}")
 
 FUNCV = _IDef("FUNCV", 		T_RBS, 	None, 	None,
-		"Var-arg function with frame size {A}")
+              "Var-arg function with frame size {A}")
 
 IFUNCV = _IDef("IFUNCV", 	T_RBS, 	None, 	None,
-		"Interpreted var-arg function with frame size {A}")
+               "Interpreted var-arg function with frame size {A}")
 
 JFUNCV = _IDef("JFUNCV", 	T_RBS, 	None, 	T_LIT,
-		"JIT compiled var-arg function with frame size {A}")
+               "JIT compiled var-arg function with frame size {A}")
 
 FUNCC = _IDef("FUNCC", 		T_RBS, 	None, 	None,
-		"C function with frame size {A}")
+              "C function with frame size {A}")
 FUNCCW = _IDef("FUNCCW", 	T_RBS, 	None, 	None,
-		"Wrapped C function with frame size {A}")
+               "Wrapped C function with frame size {A}")
 
 UNKNW = _IDef("UNKNW", 		T_LIT, 	T_LIT, 	T_LIT, "Unknown instruction")

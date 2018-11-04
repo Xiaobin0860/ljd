@@ -6,11 +6,10 @@
 
 import ljd.util.binstream
 from ljd.util.log import errprint
-
 import ljd.bytecode.prototype
-
 import ljd.rawdump.header
 import ljd.rawdump.prototype
+import gconfig
 
 
 class _State():
@@ -31,9 +30,9 @@ def parse(filename):
 
     try:
         r = r and _read_header(parser, header)
-        #print("good1")
+        # print("good1")
         r = r and _read_prototypes(parser, parser.prototypes)
-        #print("good2")
+        # print("good2")
     except IOError as e:
         errprint("I/O error while reading dump: {0}", str(e))
         r = False
@@ -53,10 +52,13 @@ def parse(filename):
     else:
         return None, None
 
-#zzw 20180716 解析字节码文件头部结构header
+
+# zzw 20180716 解析字节码文件头部结构header
 '''
 | magic(3 bytes)| version(1 byte) | flag(1 uleb128) [| name(1 uleb128) |]
 '''
+
+
 def _read_header(parser, header):
     if not ljd.rawdump.header.read(parser, header):
         errprint("Failed to read raw-dump header")
@@ -73,7 +75,8 @@ def _read_header(parser, header):
 def _read_prototypes(state, prototypes):
     while not state.stream.eof():
         prototype = ljd.bytecode.prototype.Prototype()
-        #print ("good rwsdump->parser->read_prototypes")
+        if gconfig.gVerbose:
+            print("good rwsdump->parser->read_prototypes")
 
         if not ljd.rawdump.prototype.read(state, prototype):
             if state.stream.eof():

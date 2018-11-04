@@ -9,6 +9,7 @@ import ljd.bytecode.instructions as ins
 import ljd.rawdump.constants
 import ljd.rawdump.debuginfo
 import ljd.rawdump.code
+import gconfig
 
 
 FLAG_HAS_CHILD = 0b00000001
@@ -28,6 +29,8 @@ class _State():
         self.numeric_constants_count = 0
         self.instructions_count = 0
         self.debuginfo_size = 0
+
+
 '''
 zzw 20180716
 | size(1 uleb128) | flag(1 byte) | arguments_count(1 byte) 
@@ -36,6 +39,7 @@ zzw 20180716
 | first_line_number(1 uleb128) | lines_count(1 uleb128) ] | instructions(protoheader define) 
 | constants(protoheader define) | debginfo(protoheader flage define) |
 '''
+
 
 def read(parser, prototype):
     parser = _State(parser)
@@ -136,11 +140,8 @@ def _read_instructions(parser, prototype):
         if not instruction:
             return False
 
-        #print ("inst：%s" % instruction.name)
-        #print ("opcode:%x" % instruction.opcode)
-        #print ("A:%x" % instruction.A)
-        #print ("B:%x" % instruction.B)
-        #print ("CD:%x" % instruction.CD)
+        if gconfig.gVerbose:
+            print(instruction)
         prototype.instructions.append(instruction)
 
         i += 1
@@ -157,5 +158,5 @@ def _read_debuginfo(stream, prototype):
         return True
 
     return ljd.rawdump.debuginfo.read(stream,
-                        prototype.first_line_number,
-                        prototype.debuginfo)
+                                      prototype.first_line_number,
+                                      prototype.debuginfo)

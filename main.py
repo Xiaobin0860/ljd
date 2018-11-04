@@ -74,9 +74,6 @@ def dump(name, obj, level=0):
             dump(key, val, level + 1)
 
 
-G_VERBOSE = False
-
-
 def usage():
     print("ljd -i <input> [-o <output>] [-v]")
 
@@ -91,8 +88,7 @@ def main():
         if op == "-o":
             file_out = value
         if op == "-v":
-            global G_VERBOSE
-            G_VERBOSE = True
+            gconfig.gVerbose = True
         if op == "-h":
             usage()
             sys.exit()
@@ -104,7 +100,7 @@ def main():
     if not prototype:
         return 1
 
-    if G_VERBOSE == True:
+    if gconfig.gVerbose == True:
         ljd.pseudoasm.writer.write(sys.stdout, header, prototype)
 
     ast = ljd.ast.builder.build(prototype)
