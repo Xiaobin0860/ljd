@@ -24,6 +24,7 @@
 #
 
 import sys
+import getopt
 
 import ljd.rawdump.parser
 import ljd.pseudoasm.writer
@@ -34,8 +35,9 @@ import ljd.ast.slotworks
 import ljd.ast.unwarper
 import ljd.ast.mutator
 import ljd.lua.writer
-#zzw 20180714 support str encode
+# zzw 20180714 support str encode
 import gconfig
+
 
 def dump(name, obj, level=0):
     indent = level * '\t'
@@ -48,21 +50,21 @@ def dump(name, obj, level=0):
     if isinstance(obj, (int, float, str)):
         print(prefix + str(obj))
     elif isinstance(obj, list):
-        print (prefix + "[")
+        print(prefix + "[")
 
         for value in obj:
             dump(None, value, level + 1)
 
-        print (indent + "]")
+        print(indent + "]")
     elif isinstance(obj, dict):
-        print (prefix + "{")
+        print(prefix + "{")
 
         for key, value in obj.items():
             dump(key, value, level + 1)
 
-        print (indent + "}")
+        print(indent + "}")
     else:
-        print (prefix + obj.__class__.__name__)
+        print(prefix + obj.__class__.__name__)
 
         for key in dir(obj):
             if key.startswith("__"):
@@ -72,16 +74,38 @@ def dump(name, obj, level=0):
             dump(key, val, level + 1)
 
 
-def main():
-    file_in = sys.argv[1]
+G_VERBOSE = False
 
+
+def usage():
+    print("ljd -i <input> [-o <output>] [-v]")
+
+
+def main():
+    opts, _args = getopt.getopt(sys.argv[1:], "hi:o:v")
+    file_in = ""
+    file_out = ""
+    for op, value in opts:
+        if op == "-i":
+            file_in = value
+        if op == "-o":
+            file_out = value
+        if op == "-v":
+            global G_VERBOSE
+            G_VERBOSE = True
+        if op == "-h":
+            usage()
+            sys.exit()
+    if file_in == "":
+        usage()
+        sys.exit()
     header, prototype = ljd.rawdump.parser.parse(file_in)
     #print ("good")
     if not prototype:
         return 1
 
-    # TODO: args
-    # ljd.pseudoasm.writer.write(sys.stdout, header, prototype)
+    if G_VERBOSE == True:
+        ljd.pseudoasm.writer.write(sys.stdout, header, prototype)
 
     ast = ljd.ast.builder.build(prototype)
 
@@ -115,7 +139,11 @@ def main():
 
             ljd.ast.validator.validate(ast, warped=False)
 
-    ljd.lua.writer.write(sys.stdout, ast)
+    if file_out == "":
+        ljd.lua.writer.write(sys.stdout, ast)
+    else:
+        fout = open(file_out, "w")
+        ljd.lua.writer.write(fout, ast)
 
     return 0
 
