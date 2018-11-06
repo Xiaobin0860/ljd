@@ -8,6 +8,7 @@ from ljd.bytecode.helpers import get_jump_destination
 from ljd.bytecode.constants import T_NIL, T_FALSE, T_TRUE
 
 import ljd.ast.nodes as nodes
+import gconfig
 
 
 class _State():
@@ -17,6 +18,7 @@ class _State():
 		self.block = None
 		self.blocks = []
 		self.block_starts = {}
+		self.new_func = False
 
 	def _warp_in_block(self, addr):
 		#print (self.block_starts)
@@ -337,6 +339,9 @@ def _build_flow_warp(state, addr, instruction):
 
 
 def _build_statement(state, addr, instruction):
+	if gconfig.gVerbose:
+		print("_build_statement addr={addr}".format(addr=addr))
+		print(instruction)
 	opcode = instruction.opcode
 	A_type = instruction.A_type
 
@@ -418,6 +423,7 @@ def _build_var_assignment(state, addr, instruction):
 
 	elif opcode == ins.FNEW.opcode:
 		expression = _build_function(state, instruction.CD)
+		state.new_func = True
 
 	elif opcode == ins.TNEW.opcode:
 		expression = nodes.TableConstructor()
@@ -799,6 +805,11 @@ def _build_comparison_expression(state, addr, instruction):
 def _build_unary_expression(state, addr, instruction):
 	opcode = instruction.opcode
 
+	# ASSIGNMENT starting from FNEW and ending at MOV
+	if state.new_func and opcode == ins.MOV.opcode:
+		state.new_func = False
+		return _build_identifier(state, addr, instruction.CD, nodes.Identifier.T_LOCAL, True)
+
 	variable = _build_slot(state, addr, instruction.CD)
 
 	# Mind the inversion
@@ -831,7 +842,7 @@ def _build_upvalue(state, addr, slot):
 	return _build_identifier(state, addr, slot, nodes.Identifier.T_UPVALUE)
 
 
-def _build_identifier(state, addr, slot, want_type):
+def _build_identifier(state, addr, slot, want_type, need_local_name = False):
 	node = nodes.Identifier()
 	setattr(node, "_addr", addr)
 
@@ -844,6 +855,14 @@ def _build_identifier(state, addr, slot, want_type):
 		if name is not None:
 			node.name = name
 			node.type = want_type
+
+	if need_local_name and want_type == nodes.Identifier.T_LOCAL:
+		name = state.debuginfo.lookup_upvalue_name(slot)
+		
+		if name is None:
+			name = "slot{slot}".format(slot=slot)
+		node.name = name
+		node.type = want_type
 
 	return node
 

@@ -43,7 +43,7 @@ function slot12(slot0)
 
 	if slot0 == "gateSvr" then
 		if slot2.loginSvr then
-			slot2.loginSvr:close()
+			slot2.loginSvr.close(slot1)
 		end
 
 		slot3.Import("ClientGate")
@@ -68,7 +68,7 @@ function slot12(slot0)
 			return 
 		end)
 
-		slot7 = slot5.Director:getInstance():getScheduler():scheduleScriptFunc(slot8, 20, false)
+		slot7 = slot5.Director.getInstance(slot2):getScheduler():scheduleScriptFunc(slot8, 20, false)
 	end
 
 	return 
