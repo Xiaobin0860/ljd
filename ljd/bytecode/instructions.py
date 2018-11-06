@@ -265,7 +265,9 @@ IFORL = _IDef("IFORL", 	 	T_BS, 	None, 	T_JMP,
               "{A} = {A} + {A_plus_two};"
               " if cmp({A}, sign {A_plus_two}, {A_plus_one}) goto {D}")
 
-JFORL = _IDef("JFORL", 		T_BS, 	None, 	T_JMP,
+# lxb luajit lj_bc.h (JFORL,	base,	___,	lit,	___)
+#JFORL = _IDef("JFORL", 		T_BS, 	None, 	T_JMP,
+JFORL = _IDef("JFORL", 		T_BS, 	None, 	T_LIT,
               "{A} = {A} + {A_plus_two};"
               " if cmp({A}, sign {A_plus_two}, {A_plus_one}) goto {D}")
 
