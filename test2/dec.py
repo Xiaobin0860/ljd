@@ -16,7 +16,7 @@ def main():
         for f in files:
             if f.endswith('.luac'):
                 luac = os.path.join(root, f)
-                fileName = os.path.basename(f).split('.')[0] + '.lua'
+                fileName = os.path.splitext(f)[0] + '.lua'
                 lua = os.path.join(out_dir, fileName)
                 print('decrypt ' + luac + ' to ' + lua)
                 os.system('ljd -i"' + luac + '" -o "' + lua + '"')
