@@ -245,6 +245,7 @@ class FunctionCall():
 	def __init__(self):
 		self.function = None
 		self.arguments = ExpressionsList()
+		self.name = None
 
 	def _accept(self, visitor):
 		visitor._visit_node(visitor.visit_function_call, self)

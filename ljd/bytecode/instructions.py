@@ -59,15 +59,17 @@ class _Instruction():
             self.CD = 0
 
     def __repr__(self):
-        str = "Instruction name={0}, code=0x{1:x}".format(self.name, self.opcode)
+        str = "<Instruction name={0}, code=0x{1:x}".format(
+            self.name, self.opcode)
         if self.description is not None:
-            str += "\ndescription={0}".format(self.description)
+            str += ", description='{0}'".format(self.description)
         if self.A_type is not None:
-            str += "\na=0x{0:x}".format(self.A)
+            str += ", a=0x{0:x}".format(self.A)
         if self.B_type is not None:
-            str += "\nb=0x{0:x}".format(self.B)
+            str += ", b=0x{0:x}".format(self.B)
         if self.CD_type is not None:
-            str += "\ncd=0x{0:x}".format(self.CD)
+            str += ", cd=0x{0:x}".format(self.CD)
+        str += ">"
         return str
 
 
@@ -96,7 +98,17 @@ class _IDef():
 
 # class = name			A	B	C	description
 # Comparison ops
-# _IDef(name, A_type, B_type, CD_type, description)
+# 
+"""
+_IDef(name, A_type, B_type, CD_type, description)
+    The opcode name suffixes specify the type for RB/RC or RD:
+        V = variable slot
+        S = string const
+        N = number const
+        P = primitive type (~itype)
+        B = unsigned byte literal
+        M = multiple args/results
+"""
 ISLT = _IDef("ISLT", 		T_VAR, 	None, 	T_VAR, 	"if {A} < {D}")
 ISGE = _IDef("ISGE", 		T_VAR, 	None, 	T_VAR, 	"if {A} >= {D}")
 ISLE = _IDef("ISLE", 		T_VAR, 	None, 	T_VAR, 	"if {A} <= {D}")
@@ -209,6 +221,7 @@ TSETR = _IDef("TSETR", 		T_VAR, 	T_VAR, 	T_VAR, 	"unkow TSETR")
 CALLM = _IDef("CALLM", 		T_BS, 	T_LIT, 	T_LIT,
               "{from_A_x_B_minus_two} = {A}({from_A_plus_one_x_C}, ...MULTRES)")
 
+#Call: A, ..., A+B-2 = A(A+1, ..., A+C-1)
 CALL = _IDef("CALL", 		T_BS, 	T_LIT, 	T_LIT,
              "{from_A_x_B_minus_two} = {A}({from_A_plus_one_x_C_minus_one})")
 
@@ -266,7 +279,7 @@ IFORL = _IDef("IFORL", 	 	T_BS, 	None, 	T_JMP,
               " if cmp({A}, sign {A_plus_two}, {A_plus_one}) goto {D}")
 
 # lxb luajit lj_bc.h (JFORL,	base,	___,	lit,	___)
-#JFORL = _IDef("JFORL", 		T_BS, 	None, 	T_JMP,
+# JFORL = _IDef("JFORL", 		T_BS, 	None, 	T_JMP,
 JFORL = _IDef("JFORL", 		T_BS, 	None, 	T_LIT,
               "{A} = {A} + {A_plus_two};"
               " if cmp({A}, sign {A_plus_two}, {A_plus_one}) goto {D}")

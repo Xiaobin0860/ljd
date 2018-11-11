@@ -103,7 +103,10 @@ def _translate(writer, addr, value, attr_type):
 			return "slot" + str(value)
 	elif attr_type == ins.T_UV:
 		name = prototype.debuginfo.lookup_upvalue_name(value)
-		return "uv" + str(value) + '"' + name + '"'
+		if name is not None:
+			return "uv" + str(value) + '"' + name + '"'
+		else:
+			return "uv" + str(value)
 	elif attr_type == ins.T_PRI:
 		if value is None or value == T_NIL:
 			return "nil"
@@ -200,8 +203,10 @@ def _lookup_variable_name_step(writer, addr, slot):
 		if instruction.opcode == ins.UGET.opcode:
 			uv = instruction.CD
 			name = writer.prototype.debuginfo.lookup_upvalue_name(uv)
-
-			return "uv" + str(uv) + '"' + name + '"'
+			if name is None:
+				return "uv" + str(uv)
+			else:
+				return "uv" + str(uv) + '"' + name + '"'
 
 		return None
 
