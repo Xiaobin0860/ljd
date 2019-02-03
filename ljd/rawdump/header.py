@@ -4,9 +4,10 @@
 
 from ljd.util.log import errprint
 
-
+# ESC 'L' 'J'
 _MAGIC = b'\x1bLJ'
 
+#0x80 or higher for private bytecode
 _MAX_VERSION = 0x80
 
 _FLAG_IS_BIG_ENDIAN = 0b00000001
@@ -57,7 +58,7 @@ def _read_version(state, header):
 
     if header.version > _MAX_VERSION:
         errprint("Version {0}: propritary modifications",
-                        header.version)
+                 header.version)
         return False
 
     return True

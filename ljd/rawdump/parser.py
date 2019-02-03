@@ -4,6 +4,23 @@
 
 #!/usr/bin/python3
 
+'''
+** dump   = header proto+ 0U
+** header = ESC 'L' 'J' versionB flagsU [namelenU nameB*]
+** proto  = lengthU pdata
+** pdata  = phead bcinsW* uvdataH* kgc* knum* [debugB*]
+** phead  = flagsB numparamsB framesizeB numuvB numkgcU numknU numbcU
+**          [debuglenU [firstlineU numlineU]]
+** kgc    = kgctypeU { ktab | (loU hiU) | (rloU rhiU iloU ihiU) | strB* }
+** knum   = intU0 | (loU1 hiU)
+** ktab   = narrayU nhashU karray* khash*
+** karray = ktabk
+** khash  = ktabk ktabk
+** ktabk  = ktabtypeU { intU | (loU hiU) | strB* }
+**
+** B = 8 bit, H = 16 bit, W = 32 bit, U = ULEB128 of W, U0/U1 = ULEB128 of W+1
+'''
+
 import ljd.util.binstream
 from ljd.util.log import errprint
 import ljd.bytecode.prototype
@@ -53,12 +70,7 @@ def parse(filename):
         return None, None
 
 
-# zzw 20180716 解析字节码文件头部结构header
-'''
-| magic(3 bytes)| version(1 byte) | flag(1 uleb128) [| name(1 uleb128) |]
-'''
-
-
+#| magic(3 bytes) | version(1 byte) | flag(1 uleb128) [| namelen(1 uleb128) name(bytes) |]
 def _read_header(parser, header):
     if not ljd.rawdump.header.read(parser, header):
         errprint("Failed to read raw-dump header")
