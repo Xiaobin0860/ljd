@@ -46,6 +46,12 @@ T_JMP = 13  # branch target, relative to next instruction, biased with 0x8000
 
 class _Instruction():
     def __init__(self, definition):
+        self.A_type = None
+        self.B_type = None
+        self.CD_type = None
+        self.name = None
+        self.opcode = 0
+        self.description = None
         for key, value in definition.__dict__.items():
             setattr(self, key, value)
 

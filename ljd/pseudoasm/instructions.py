@@ -23,8 +23,6 @@ class _State():
 
 
 def write(writer, prototype):
-	global _MAP
-
 	# skip the first function header
 	addr = 1
 

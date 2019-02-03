@@ -21,6 +21,7 @@ FLAG_HAS_ILOOP = 0b00010000
 
 class _State():
     def __init__(self, parser):
+        self.stream = None
         for key, value in parser.__dict__.items():
             setattr(self, key, value)
 
