@@ -98,7 +98,7 @@ class _IDef():
 
 # class = name			A	B	C	description
 # Comparison ops
-# 
+#
 """
 _IDef(name, A_type, B_type, CD_type, description)
     The opcode name suffixes specify the type for RB/RC or RD:
@@ -221,7 +221,7 @@ TSETR = _IDef("TSETR", 		T_VAR, 	T_VAR, 	T_VAR, 	"unkow TSETR")
 CALLM = _IDef("CALLM", 		T_BS, 	T_LIT, 	T_LIT,
               "{from_A_x_B_minus_two} = {A}({from_A_plus_one_x_C}, ...MULTRES)")
 
-#Call: A, ..., A+B-2 = A(A+1, ..., A+C-1)
+# Call: A, ..., A+B-2 = A(A+1, ..., A+C-1)
 CALL = _IDef("CALL", 		T_BS, 	T_LIT, 	T_LIT,
              "{from_A_x_B_minus_two} = {A}({from_A_plus_one_x_C_minus_one})")
 

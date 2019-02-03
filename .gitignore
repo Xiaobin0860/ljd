@@ -1,6 +1,7 @@
 *.lua[co]
 **/*.py[cod]
 .vscode
+.DS_Store
 
 # C extensions
 *.so

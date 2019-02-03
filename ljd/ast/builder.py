@@ -618,14 +618,17 @@ def _build_range_assignment(state, addr, from_slot, to_slot):
 
     return assignment
 
+
 def _build_class_assignment(addr, slot, class_name):
     assignment = nodes.Assignment()
 
-    destination = _build_identifier_name(addr, slot, nodes.Identifier.T_LOCAL, class_name)
+    destination = _build_identifier_name(
+        addr, slot, nodes.Identifier.T_LOCAL, class_name)
 
     assignment.destinations.contents.append(destination)
 
     return assignment
+
 
 _BINARY_OPERATOR_MAP = [None] * 255
 
@@ -888,6 +891,7 @@ def _build_identifier(state, addr, slot, want_type, need_local_name=False):
 
     return node
 
+
 def _build_identifier_name(addr, slot, want_type, name):
     node = nodes.Identifier()
     setattr(node, "_addr", addr)
@@ -897,6 +901,7 @@ def _build_identifier_name(addr, slot, want_type, name):
     node.name = name
 
     return node
+
 
 def _build_global_variable(state, addr, slot):
     node = nodes.TableElement()
