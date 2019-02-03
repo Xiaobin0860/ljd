@@ -13,7 +13,7 @@ def insert_table_record(constructor, key, value):
         records.append(value)
         return
 
-    while isinstance(key, nodes.Constant) and key.type == key.T_INTEGER key.value >= 0:
+    while isinstance(key, nodes.Constant) and key.type == key.T_INTEGER and key.value >= 0:
         index = key.value
 
         if index == 1 and len(array) == 0:
